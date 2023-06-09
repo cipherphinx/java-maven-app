@@ -1,40 +1,33 @@
-def gv
-
 pipeline {
     agent any
-    parameters {
-        choice(name: 'VERSION', choices: ['1.1.0', '1.2.0', '1.3.0'], description: '')
-        booleanParam(name: 'executeTest', defaultValue: true, description: '')
+    tools {
+        maven 'maven-3.8.8'
     }
 
     stages {
 
-        stage("init") {
+        stage("build jar") {
             steps {
                 script {
-                    gv = load "script.groovy"
+                    echo "building the application..."
+                    sh 'mvn package'
                 }
+
             }
+
         }
 
-        stage("build") {
+        stage("build image") {
             steps {
                 script {
-                    gv.buildApp()
+                    echo "building the docker image..."
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-cred', passwordVariable: 'PASS', usernameVariable: 'USER' )]) {
+                        sh 'docker build -t cipherphinx/demo-app:jma-2.0 .'
+                        sh "echo $PASS | docker login -u $USER --password-stdin"
+                        sh 'docker push cipherphinx/demo-app:jma-2.0'
+                    }
                 }
-            }
-        }
 
-        stage("test") {
-            when {
-                expression {
-                    params.executeTest == true
-                }
-            }
-            steps {
-                script {
-                    gv.testApp()
-                }
             }
 
         }
@@ -42,10 +35,7 @@ pipeline {
         stage("deploy") {
             steps {
                 script {
-                    env.ENV = input message: "Select the environment to deploy to", ok: "Done", parameters: [choice(name: 'ONE', choices: ['dev', 'staging', 'prod'], description: '')]
-
-                    gv.deployApp()
-                    echo "Deploying to ${ENV}"
+                    echo "deploying the application..."
                 }
             }
         }

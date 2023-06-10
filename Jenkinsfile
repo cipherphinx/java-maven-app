@@ -1,28 +1,36 @@
 #!/usr/bin/env groovy
 
+@Library('jenkins-shared-library')
+def gv
+
 pipeline {
-    agent none
+    agent any
+    tools {
+        maven 'maven-3.8.8'
+    }
 
     stages {
 
-        stage("test") {
+        stage('init') {
             steps {
                 script {
-                   echo "Testing the application..."
-                   echo "Executing the pipeline for branch $BRANCH_NAME"
+                    gv = load "script.groovy"
                 }
             }
         }
 
-        stage("build") {
-            when {
-                expression {
-                    BRANCH_NAME == 'main'
-                }
-            }
+        stage("build jar") {
             steps {
                 script {
-                     echo "Building the application..."
+                    buildJar()
+                }
+            }
+        }
+
+        stage("build image") {
+            steps {
+                script {
+                    buildImage()
                 }
 
             }
@@ -30,14 +38,9 @@ pipeline {
         }
 
         stage("deploy") {
-            when {
-                expression {
-                    BRANCH_NAME == 'main'
-                }
-            }
             steps {
                 script {
-                    echo "Deploying the application..."
+                    gv.deployApp()
                 }
             }
         }

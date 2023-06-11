@@ -1,41 +1,52 @@
 pipeline {
-    agent none
+    agent any
+    tools {
+        maven 'maven-3.8.8'
+    }
 
     stages {
 
-        stage("test") {
+        stage('increment version') {
             steps {
                 script {
-                   echo "Testing the application..."
-                   echo "Executing the pipeline for branch $BRANCH_NAME"
+                     echo "Incrementing app version..."
+                     sh 'mvn build-helper:parse-version versions:set \
+                        -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} \
+                        versions:commit'
+                     def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
+                     def version = matcher[0][1]
+                     env.IMAGE_NAME = "$version-$BUILD_NUMBER"
                 }
             }
         }
 
-        stage("build") {
-            when {
-                expression {
-                    BRANCH_NAME == 'main'
-                }
-            }
+        stage('build app') {
+
             steps {
                 script {
                      echo "Building the application..."
+                     sh 'mvn clean package'
                 }
-
             }
+        }
 
+        stage('build image') {
+            steps {
+                script {
+                     echo "building the docker image..."
+                     withCredentials([usernamePassword(credentialsId: 'docker-hub-cred', passwordVariable: 'PASS', usernameVariable: 'USER' )]) {
+                         sh "docker build -t cipherphinx/demo-app:${IMAGE_NAME} ."
+                         sh "echo $PASS | docker login -u $USER --password-stdin"
+                         sh "docker push cipherphinx/demo-app:${IMAGE_NAME}"
+                     }
+                }
+            }
         }
 
         stage("deploy") {
-            when {
-                expression {
-                    BRANCH_NAME == 'main'
-                }
-            }
             steps {
                 script {
-                    echo "Deploying the application..."
+                    echo "Deploying docker image to EC2..."
                 }
             }
         }

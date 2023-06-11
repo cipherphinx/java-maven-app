@@ -54,13 +54,13 @@ pipeline {
         stage('commit version update') {
             steps {
                 script {
-                     withCredentials([gitUsernamePassword(credentialsId: 'cipherphinx-github-token', gitToolName: 'Default')]) {
-
-                         sh "git remote set-url origin git@github.com:cipherphinx/java-maven-app.git"
-                         sh 'git add .'
-                         sh 'git commit -m "ci: version bump"'
-                         sh 'git push origin HEAD:jenkins-jobs'
-                     }
+                    withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                    sh 'git config --global credential.helper store' // Optional: Store credentials to avoid prompts in subsequent builds
+                    sh "git remote set-url origin git@github.com:cipherphinx/java-maven-app.git"
+                     sh 'git add .'
+                     sh 'git commit -m "ci: version bump"'
+                     sh 'git push origin HEAD:jenkins-jobs'
+                }
                 }
             }
         }

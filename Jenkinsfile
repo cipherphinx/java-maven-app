@@ -58,12 +58,6 @@ pipeline {
                         sh 'git config --global user.email "cipherphinx@gmail.com"'
                         sh 'git config --global user.name "cipherphinx"'
                         sh "git remote set-url origin https://cipherphinx:${GITHUB_TOKEN}@github.com/cipherphinx/java-maven-app.git"
-
-                        sh 'git status'
-                        sh 'git branch -a'
-                        //sh 'git checkout jenkins-jobs'
-                        sh 'git config --list'
-
                         //sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com:cipherphinx/java-maven-app.git"
                         sh 'git add .'
                         sh 'git commit -m "ci: version bump"'

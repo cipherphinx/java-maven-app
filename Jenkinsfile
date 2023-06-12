@@ -6,65 +6,34 @@ pipeline {
 
     stages {
 
-        stage('increment version') {
-            steps {
-                script {
-                     echo "Incrementing app version..."
-                     sh 'mvn build-helper:parse-version versions:set \
-                        -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} \
-                        versions:commit'
-                     def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
-                     def version = matcher[0][1]
-                     env.IMAGE_NAME = "$version-$BUILD_NUMBER"
+            stage("test") {
+                steps {
+                    script {
+                       echo "Testing the application..."
+                       echo "Executing the pipeline for branch $BRANCH_NAME"
+                    }
                 }
             }
-        }
 
-        stage('build app') {
+            stage("build") {
+                steps {
+                    script {
+                         echo "Building the application..."
+                    }
 
-            steps {
-                script {
-                     echo "Building the application..."
-                     sh 'mvn clean package'
                 }
-            }
-        }
 
-        stage('build image') {
-            steps {
-                script {
-                     echo "building the docker image..."
-                     withCredentials([usernamePassword(credentialsId: 'docker-hub-cred', passwordVariable: 'PASS', usernameVariable: 'USER' )]) {
-                         sh "docker build -t cipherphinx/demo-app:${IMAGE_NAME} ."
-                         sh "echo $PASS | docker login -u $USER --password-stdin"
-                         sh "docker push cipherphinx/demo-app:${IMAGE_NAME}"
-                     }
-                }
             }
-        }
 
-        stage("deploy") {
-            steps {
-                script {
-                    echo "Deploying docker image to EC21..."
-                }
-            }
-        }
-
-        stage('commit version update') {
-            steps {
-                script {
-                    withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                        //sh 'git config --global user.email "jenkins@gmail.com"'
-                        //sh 'git config --global user.name "jenkins"'
-                        sh "git remote set-url origin https://cipherphinx:${GITHUB_TOKEN}@github.com/cipherphinx/java-maven-app.git"
-                        //sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com:cipherphinx/java-maven-app.git"
-                        sh 'git add .'
-                        sh 'git commit -m "ci: version bump"'
-                        sh 'git push origin HEAD:jenkins-jobs'
+            stage("deploy") {
+                steps {
+                    script {
+                        def dockerCmd = 'docker run -p 3080:3080 -d cipherphinx/demo-app:jma-1.0'
+                        sshagent(['ec2-server-key']) {
+                            sh "ssh -o StrictHostKeyChecking=no ec2-user@13.229.209.189 ${dockerCmd}"
+                        }
                     }
                 }
             }
         }
-    }
 }

@@ -2,7 +2,7 @@
 
 library identifier: 'jenkins-shared-library@master', retriever: modernSCM(
     [$class: 'GITSCMSource',
-     remote: 'https://github.com/cipherphinx/jenkins-shared-library.git'
+     remote: 'https://github.com/cipherphinx/jenkins-shared-library.git',
      credentialsId: 'github-credentials'
     ]
 )

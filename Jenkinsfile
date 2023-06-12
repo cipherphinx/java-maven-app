@@ -57,7 +57,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                         sh 'git config --global user.email "jenkins@example.com"'
                         sh 'git config --global user.name "jenkins"'
-                        //sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com:cipherphinx/java-maven-app.git"
+                        sh "git remote set-url origin https://cipherphinx:${GITHUB_TOKEN}@github.com/cipherphinx/java-maven-app.git"
 
                         sh 'git status'
                         sh 'git branch -a'
@@ -67,7 +67,7 @@ pipeline {
                         //sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com:cipherphinx/java-maven-app.git"
                         sh 'git add .'
                         sh 'git commit -m "ci: version bump"'
-                        sh "git push https://${GITHUB_TOKEN}@github.com:cipherphinx/java-maven-app.git jenkins-jobs"
+                        //sh "git push https://${GITHUB_TOKEN}@github.com:cipherphinx/java-maven-app.git jenkins-jobs"
                     }
                 }
             }

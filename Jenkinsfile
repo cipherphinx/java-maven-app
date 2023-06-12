@@ -55,12 +55,13 @@ pipeline {
             steps {
                 script {
                     withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                        sh 'git config --global credential.helper store' // Optional: Store credentials to avoid prompts in subsequent builds
+                        sh 'git config --global user.email "jenkins@example.com"'
+                        sh 'git config --global user.name "jenkins"'
 
-                        sh 'git add .'
-                        sh 'git commit -m "ci: version bump"'
-                        sh 'git push origin jenkins-jobs'
-                }
+                        sh 'git status'
+                        sh 'git branch'
+                        sh 'git config --list'
+                    }
                 }
             }
         }

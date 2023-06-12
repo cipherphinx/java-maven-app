@@ -60,14 +60,14 @@ pipeline {
                         sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com:cipherphinx/java-maven-app.git"
 
                         sh 'git status'
-                        sh 'git branch'
+                        sh 'git branch -a'
                         sh 'git checkout jenkins-jobs'
                         sh 'git config --list'
 
                         //sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com:cipherphinx/java-maven-app.git"
-                        sh 'git add .'
-                        sh 'git commit -m "ci: version bump"'
-                        sh 'git push origin jenkins-jobs'
+                        //sh 'git add .'
+                        //sh 'git commit -m "ci: version bump"'
+                        //sh 'git push origin jenkins-jobs'
                     }
                 }
             }

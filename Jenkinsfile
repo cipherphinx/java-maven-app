@@ -61,6 +61,8 @@ pipeline {
                         sh 'git status'
                         sh 'git branch'
                         sh 'git config --list'
+
+                        sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com:cipherphinx/java-maven-app.git"
                     }
                 }
             }

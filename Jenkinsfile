@@ -13,11 +13,21 @@ pipeline {
         maven 'maven-3.8.8'
     }
 
-    environment {
-        IMAGE_NAME = 'cipherphinx/demo-app:1.1.1-9'
-    }
-
     stages {
+
+            stage('increment version') {
+                steps {
+                    script {
+                         echo "Incrementing app version..."
+                         sh 'mvn build-helper:parse-version versions:set \
+                            -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} \
+                            versions:commit'
+                         def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
+                         def version = matcher[0][1]
+                         env.IMAGE_NAME = "$version-$BUILD_NUMBER"
+                    }
+                }
+            }
 
             stage('build app') {
                 steps {
@@ -56,5 +66,21 @@ pipeline {
                     }
                 }
             }
-        }
+
+            stage('commit version update') {
+                steps {
+                    script {
+                        withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                            //sh 'git config --global user.email "jenkins@gmail.com"'
+                            //sh 'git config --global user.name "jenkins"'
+                            sh "git remote set-url origin https://cipherphinx:${GITHUB_TOKEN}@github.com/cipherphinx/java-maven-app.git"
+                            //sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com:cipherphinx/java-maven-app.git"
+                            sh 'git add .'
+                            sh 'git commit -m "ci: version bump"'
+                            sh 'git push origin HEAD:jenkins-jobs'
+                        }
+                    }
+                }
+            }
+    }
 }

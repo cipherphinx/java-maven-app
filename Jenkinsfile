@@ -63,6 +63,8 @@ pipeline {
                         sh 'git config --list'
 
                         sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com:cipherphinx/java-maven-app.git"
+                        sh 'git add .'
+                        sh 'git commit -m "ci: version bump"'
                     }
                 }
             }

@@ -1,7 +1,20 @@
+#!/usr/bin/env groovy
+
+library identifier: 'jenkins-shared-library@master', retriever: modernSCM(
+    [$class: 'GITSCMSource',
+     remote: 'https://github.com/cipherphinx/jenkins-shared-library.git'
+     credentialsId: 'github-credentials'
+    ]
+)
+
 pipeline {
     agent any
     tools {
         maven 'maven-3.8.8'
+    }
+
+    environment {
+        IMAGE_NAME = 'nanajanashia/demo-app:java-maven-1.0'
     }
 
     stages {
